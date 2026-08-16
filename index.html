@@ -1,382 +1,160 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Scanner</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-            color: #eaeaea;
-            padding: 20px;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 2rem;
-            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .subtitle {
-            text-align: center;
-            color: #888;
-            margin-bottom: 30px;
-            font-size: 0.9rem;
-        }
-        .card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
-        }
-        .upload-area {
-            border: 2px dashed rgba(0,212,255,0.3);
-            border-radius: 10px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: rgba(0,212,255,0.02);
-        }
-        .upload-area:hover {
-            border-color: #00d4ff;
-            background: rgba(0,212,255,0.05);
-        }
-        .upload-area.dragover {
-            border-color: #00d4ff;
-            background: rgba(0,212,255,0.1);
-        }
-        .upload-icon { font-size: 3rem; margin-bottom: 10px; }
-        #fileInput { display: none; }
-        .btn {
-            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            font-weight: 600;
-        }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,212,255,0.3); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .progress-container {
-            display: none;
-            margin-top: 20px;
-        }
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
-            width: 0%;
-            transition: width 0.3s;
-        }
-        .progress-text {
-            text-align: center;
-            margin-top: 8px;
-            font-size: 0.9rem;
-            color: #aaa;
-        }
-        .results { margin-top: 20px; }
-        .result-item {
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .result-success { background: rgba(0,255,127,0.1); border: 1px solid rgba(0,255,127,0.3); }
-        .result-fail { background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.3); }
-        .result-captcha { background: rgba(255,165,0,0.1); border: 1px solid rgba(255,165,0,0.3); }
-        .result-error { background: rgba(128,128,128,0.1); border: 1px solid rgba(128,128,128,0.3); }
-        .badge {
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-        .badge-success { background: #00ff7f; color: #000; }
-        .badge-fail { background: #ff4757; color: #fff; }
-        .badge-captcha { background: #ffa500; color: #000; }
-        .badge-error { background: #808080; color: #fff; }
-        .details { flex: 1; word-break: break-all; }
-        .download-btn {
-            margin-top: 15px;
-            display: none;
-        }
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .stat-box {
-            background: rgba(255,255,255,0.05);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .stat-number { font-size: 1.8rem; font-weight: 700; }
-        .stat-label { font-size: 0.8rem; color: #888; margin-top: 5px; }
-        .log-area {
-            background: #0a0a0a;
-            border-radius: 8px;
-            padding: 15px;
-            max-height: 300px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 0.8rem;
-            line-height: 1.5;
-            margin-top: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .log-line { margin-bottom: 3px; }
-        .log-info { color: #00d4ff; }
-        .log-success { color: #00ff7f; }
-        .log-error { color: #ff4757; }
-        .log-warn { color: #ffa500; }
-        .file-name { color: #00d4ff; font-weight: 600; }
-        .disclaimer {
-            text-align: center;
-            font-size: 0.75rem;
-            color: #666;
-            margin-top: 30px;
-            padding: 15px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-        textarea {
-            width: 100%;
-            min-height: 120px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 8px;
-            padding: 12px;
-            color: #eaeaea;
-            font-family: monospace;
-            font-size: 0.85rem;
-            resize: vertical;
-            margin-top: 10px;
-        }
-        .or-divider {
-            text-align: center;
-            margin: 15px 0;
-            color: #666;
-            font-size: 0.85rem;
-        }
-        .hidden { display: none !important; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login Scanner</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f0f1a;color:#e0e0e0;min-height:100vh;padding:20px}
+.container{max-width:800px;margin:0 auto}
+h1{text-align:center;font-size:2rem;margin-bottom:5px;background:linear-gradient(90deg,#00d4ff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.subtitle{text-align:center;color:#888;font-size:.85rem;margin-bottom:25px}
+.card{background:#1a1a2e;border:1px solid #2a2a40;border-radius:12px;padding:20px;margin-bottom:15px}
+.dropzone{border:2px dashed #3a3a55;border-radius:10px;padding:35px;text-align:center;cursor:pointer;transition:.2s;background:#12121f}
+.dropzone:hover,.dropzone.dragover{border-color:#00d4ff;background:#0a1a2a}
+.dropzone p{color:#aaa;font-size:.9rem}
+#fileInput{display:none}
+textarea{width:100%;min-height:100px;background:#0d0d18;border:1px solid #2a2a40;border-radius:8px;padding:12px;color:#e0e0e0;font-family:monospace;font-size:.8rem;resize:vertical;margin-top:10px}
+.or{text-align:center;color:#555;font-size:.8rem;margin:12px 0}
+.btn{background:linear-gradient(90deg,#00d4ff,#a855f7);color:#fff;border:none;padding:12px 28px;border-radius:8px;font-size:1rem;cursor:pointer;font-weight:600;transition:.2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 4px 15px rgba(0,212,255,.25)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.progress{display:none;margin-top:15px}
+.progress-bar{height:6px;background:#2a2a40;border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#00d4ff,#a855f7);width:0%;transition:.3s}
+.progress-text{text-align:center;font-size:.8rem;color:#888;margin-top:6px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:15px}
+.stat{background:#1a1a2e;border:1px solid #2a2a40;border-radius:10px;padding:12px;text-align:center}
+.stat-num{font-size:1.5rem;font-weight:700}
+.stat-label{font-size:.7rem;color:#888;margin-top:2px}
+.results{max-height:400px;overflow-y:auto}
+.item{padding:10px;border-radius:8px;margin-bottom:6px;font-size:.82rem;display:flex;align-items:flex-start;gap:8px;word-break:break-all}
+.item.s{background:rgba(0,255,127,.08);border:1px solid rgba(0,255,127,.2)}
+.item.f{background:rgba(255,71,87,.08);border:1px solid rgba(255,71,87,.2)}
+.item.c{background:rgba(255,165,0,.08);border:1px solid rgba(255,165,0,.2)}
+.item.e{background:rgba(128,128,128,.08);border:1px solid rgba(128,128,128,.2)}
+.badge{padding:2px 8px;border-radius:12px;font-size:.65rem;font-weight:700;white-space:nowrap}
+.badge.s{background:#00ff7f;color:#000}
+.badge.f{background:#ff4757;color:#fff}
+.badge.c{background:#ffa500;color:#000}
+.badge.e{background:#888;color:#fff}
+.logs{background:#0a0a12;border-radius:8px;padding:10px;max-height:200px;overflow-y:auto;font-family:monospace;font-size:.75rem;line-height:1.4;margin-top:12px;border:1px solid #1a1a30}
+.logs:empty{display:none}
+.log-line{margin-bottom:2px}
+.log-i{color:#00d4ff}.log-s{color:#00ff7f}.log-f{color:#ff4757}.log-c{color:#ffa500}
+.dl-btn{display:none;margin-top:12px}
+.warn{text-align:center;font-size:.7rem;color:#555;margin-top:20px;padding-top:15px;border-top:1px solid #1a1a30}
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Login Scanner</h1>
-        <p class="subtitle">Upload file list.txt (format: url:username:password)</p>
+<div class="container">
+<h1>Login Scanner</h1>
+<p class="subtitle">Format: url:username:password (satu per baris)</p>
 
-        <div class="card">
-            <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">📁</div>
-                <p>Drag & drop file <b>list.txt</b> di sini</p>
-                <p style="color:#888; font-size:0.85rem; margin-top:5px;">atau klik untuk browse</p>
-                <input type="file" id="fileInput" accept=".txt">
-            </div>
+<div class="card">
+  <div class="dropzone" id="dropzone">
+    <p style="font-size:1.5rem;margin-bottom:5px">📁</p>
+    <p>Drop file <b>list.txt</b> di sini atau klik</p>
+    <input type="file" id="fileInput" accept=".txt">
+  </div>
+  <p class="or">— ATAU PASTE MANUAL —</p>
+  <textarea id="paste" placeholder="https://site.com/login:admin:password123&#10;https://target.com/wp-login.php:admin:admin"></textarea>
+  <div style="text-align:center;margin-top:15px">
+    <button class="btn" id="go" onclick="run()">🚀 Mulai Scan</button>
+  </div>
+  <div class="progress" id="prog">
+    <div class="progress-bar"><div class="progress-fill" id="fill"></div></div>
+    <div class="progress-text" id="ptxt">0 / 0</div>
+  </div>
+  <div class="logs" id="logs"></div>
+</div>
 
-            <div class="or-divider">— ATAU —</div>
+<div class="stats" id="stats" style="display:none">
+  <div class="stat"><div class="stat-num" id="st0" style="color:#00d4ff">0</div><div class="stat-label">Total</div></div>
+  <div class="stat"><div class="stat-num" id="st1" style="color:#00ff7f">0</div><div class="stat-label">Sukses</div></div>
+  <div class="stat"><div class="stat-num" id="st2" style="color:#ff4757">0</div><div class="stat-label">Gagal</div></div>
+  <div class="stat"><div class="stat-num" id="st3" style="color:#ffa500">0</div><div class="stat-label">Captcha</div></div>
+</div>
 
-            <p style="font-size:0.9rem; color:#aaa; margin-bottom:8px;">Paste isi file di bawah ini:</p>
-            <textarea id="pasteArea" placeholder="https://example.com/login:admin:password123&#10;https://site.com:admin:admin&#10;..."></textarea>
+<div class="card" id="outbox" style="display:none">
+  <h3 style="margin-bottom:10px;font-size:1rem">📋 Hasil</h3>
+  <div class="results" id="out"></div>
+  <button class="btn dl-btn" id="dl" onclick="download()">💾 Download</button>
+</div>
 
-            <div style="text-align:center; margin-top:20px;">
-                <button class="btn" id="startBtn" onclick="startScan()">🚀 Mulai Scan</button>
-            </div>
+<p class="warn">Gunakan hanya untuk testing keamanan sistem milik sendiri.</p>
+</div>
 
-            <div class="progress-container" id="progressContainer">
-                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-                <div class="progress-text" id="progressText">Memproses 0 dari 0...</div>
-            </div>
+<script>
+const $ = id => document.getElementById(id);
+let saved = [];
 
-            <div class="log-area hidden" id="logArea"></div>
-        </div>
+$('dropzone').onclick = () => $('fileInput').click();
+$('dropzone').ondragover = e => { e.preventDefault(); $('dropzone').classList.add('dragover'); };
+$('dropzone').ondragleave = () => $('dropzone').classList.remove('dragover');
+$('dropzone').ondrop = e => {
+  e.preventDefault(); $('dropzone').classList.remove('dragover');
+  const f = e.dataTransfer.files[0]; if(f) read(f);
+};
+$('fileInput').onchange = e => { if(e.target.files[0]) read(e.target.files[0]); };
 
-        <div class="stats hidden" id="statsArea">
-            <div class="stat-box">
-                <div class="stat-number" id="statTotal" style="color:#00d4ff">0</div>
-                <div class="stat-label">Total</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-number" id="statSuccess" style="color:#00ff7f">0</div>
-                <div class="stat-label">Sukses</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-number" id="statFail" style="color:#ff4757">0</div>
-                <div class="stat-label">Gagal</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-number" id="statCaptcha" style="color:#ffa500">0</div>
-                <div class="stat-label">Captcha</div>
-            </div>
-        </div>
+function read(file){
+  const r = new FileReader();
+  r.onload = e => { $('paste').value = e.target.result; };
+  r.readAsText(file);
+  $('dropzone').innerHTML = '<p style="color:#00d4ff;font-weight:600">✅ ' + file.name + ' loaded</p>';
+}
 
-        <div class="card results hidden" id="resultsArea">
-            <h3 style="margin-bottom:15px;">📋 Hasil Scan</h3>
-            <div id="resultsList"></div>
-            <button class="btn download-btn" id="downloadBtn" onclick="downloadResults()">💾 Download Results</button>
-        </div>
+function log(msg, t='i'){
+  const d = document.createElement('div'); d.className = 'log-line log-'+t; d.textContent = msg;
+  $('logs').appendChild(d); $('logs').scrollTop = $('logs').scrollHeight;
+}
 
-        <div class="disclaimer">
-            <b>Disclaimer:</b> Tool ini dibuat untuk keperluan testing keamanan pada sistem milik sendiri.<br>
-            Penggunaan pada sistem tanpa izin merupakan tindakan ilegal.
-        </div>
-    </div>
+async function run(){
+  const lines = $('paste').value.split('\n').map(l=>l.trim()).filter(l=>l);
+  if(!lines.length){ alert('Isi data dulu!'); return; }
+  $('go').disabled = true; $('prog').style.display='block'; $('stats').style.display='grid'; $('outbox').style.display='block';
+  $('out').innerHTML=''; $('logs').innerHTML=''; saved=[];
+  let s=0,f=0,c=0;
+  for(let i=0;i<lines.length;i++){
+    const line = lines[i];
+    $('fill').style.width = Math.round((i+1)/lines.length*100)+'%';
+    $('ptxt').textContent = (i+1)+' / '+lines.length;
+    log('['+(i+1)+'/'+lines.length+'] '+line.substring(0,55)+'...');
+    try{
+      const res = await fetch('/api', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({line:line, idx:i+1})
+      });
+      const d = await res.json();
+      if(d.status==='success'){ s++; add('s',d.msg,d.det); log('✓ '+d.msg,'s'); saved.push('[OK] '+line); }
+      else if(d.status==='captcha'){ c++; add('c',d.msg,d.det); log('⚠ '+d.msg,'c'); saved.push('[CAPTCHA] '+line); }
+      else if(d.status==='fail'){ f++; add('f',d.msg,d.det); log('✗ '+d.msg,'f'); }
+      else{ add('e',d.msg,d.det); log('! '+d.msg,'f'); }
+      $('st0').textContent=i+1; $('st1').textContent=s; $('st2').textContent=f; $('st3').textContent=c;
+    }catch(e){ log('X '+e.message,'f'); }
+    await new Promise(r=>setTimeout(r,600));
+  }
+  $('ptxt').textContent='Selesai!'; $('go').disabled=false;
+  if(saved.length) $('dl').style.display='inline-block';
+  log('Done!','s');
+}
 
-    <script>
-        let fileContent = "";
-        let allResults = [];
+function add(t,msg,det){
+  const d=document.createElement('div'); d.className='item '+t;
+  const b={s:'badge s',f:'badge f',c:'badge c',e:'badge e'};
+  const l={s:'OK',f:'FAIL',c:'CAPTCHA',e:'ERR'};
+  d.innerHTML='<span class="'+b[t]+'">'+l[t]+'</span><span>'+msg+(det?'<br><small style="color:#888">'+det+'</small>':'')+'</span>';
+  $('out').appendChild(d);
+}
 
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const pasteArea = document.getElementById('pasteArea');
-
-        uploadArea.addEventListener('click', () => fileInput.click());
-        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
-        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            const file = e.dataTransfer.files[0];
-            if (file) readFile(file);
-        });
-        fileInput.addEventListener('change', (e) => { if (e.target.files[0]) readFile(e.target.files[0]); });
-
-        function readFile(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => { fileContent = e.target.result; pasteArea.value = fileContent; };
-            reader.readAsText(file);
-            document.querySelector('.upload-icon').textContent = '✅';
-            document.querySelector('.upload-area p').innerHTML = 'File <span class="file-name">' + file.name + '</span> terpilih';
-        }
-
-        function log(msg, type='info') {
-            const logArea = document.getElementById('logArea');
-            logArea.classList.remove('hidden');
-            const div = document.createElement('div');
-            div.className = 'log-line log-' + type;
-            div.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
-            logArea.appendChild(div);
-            logArea.scrollTop = logArea.scrollHeight;
-        }
-
-        async function startScan() {
-            const content = pasteArea.value.trim();
-            if (!content) { alert("Silakan upload file atau paste isi list.txt terlebih dahulu!"); return; }
-
-            const lines = content.split('\n').filter(l => l.trim());
-            if (lines.length === 0) { alert("Data kosong!"); return; }
-
-            document.getElementById('startBtn').disabled = true;
-            document.getElementById('progressContainer').style.display = 'block';
-            document.getElementById('statsArea').classList.remove('hidden');
-            document.getElementById('resultsArea').classList.remove('hidden');
-            document.getElementById('resultsList').innerHTML = '';
-            document.getElementById('logArea').innerHTML = '';
-            allResults = [];
-
-            let success=0, fail=0, captcha=0, error=0;
-
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
-
-                const pct = Math.round(((i+1)/lines.length)*100);
-                document.getElementById('progressFill').style.width = pct + '%';
-                document.getElementById('progressText').textContent = `Memproses ${i+1} dari ${lines.length}...`;
-
-                log(`[${i+1}/${lines.length}] Memproses: ${line.substring(0,60)}...`);
-
-                try {
-                    const res = await fetch('/api', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({line: line, index: i+1})
-                    });
-                    const data = await res.json();
-
-                    if (data.status === 'success') {
-                        success++;
-                        addResult('success', data.message, data.details);
-                        log(data.message, 'success');
-                        allResults.push(`[SUCCESS] ${data.raw_line} | ${data.details}`);
-                    } else if (data.status === 'captcha') {
-                        captcha++;
-                        addResult('captcha', data.message, data.details);
-                        log(data.message, 'warn');
-                        allResults.push(`[CAPTCHA] ${data.raw_line}`);
-                    } else if (data.status === 'fail') {
-                        fail++;
-                        addResult('fail', data.message, data.details);
-                        log(data.message, 'error');
-                    } else {
-                        error++;
-                        addResult('error', data.message, data.details);
-                        log(data.message, 'error');
-                    }
-
-                    document.getElementById('statTotal').textContent = i+1;
-                    document.getElementById('statSuccess').textContent = success;
-                    document.getElementById('statFail').textContent = fail;
-                    document.getElementById('statCaptcha').textContent = captcha;
-
-                } catch (e) {
-                    error++;
-                    log('Error koneksi: ' + e.message, 'error');
-                }
-
-                await new Promise(r => setTimeout(r, 500));
-            }
-
-            document.getElementById('progressText').textContent = 'Selesai!';
-            document.getElementById('startBtn').disabled = false;
-            if (allResults.length > 0) document.getElementById('downloadBtn').style.display = 'inline-block';
-            log('Scan selesai!', 'success');
-        }
-
-        function addResult(type, msg, details) {
-            const div = document.createElement('div');
-            div.className = 'result-item result-' + type;
-            const badges = {success:'badge-success', fail:'badge-fail', captcha:'badge-captcha', error:'badge-error'};
-            const labels = {success:'SUKSES', fail:'GAGAL', captcha:'CAPTCHA', error:'ERROR'};
-            div.innerHTML = `<span class="badge ${badges[type]}">${labels[type]}</span><span class="details">${msg} ${details?'<br><small style="color:#888">'+details+'</small>':''}</span>`;
-            document.getElementById('resultsList').appendChild(div);
-        }
-
-        function downloadResults() {
-            const blob = new Blob([allResults.join('\n')], {type:'text/plain'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'results_' + new Date().toISOString().slice(0,19).replace(/:/g,'-') + '.txt';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-    </script>
+function download(){
+  const blob=new Blob([saved.join('\n')],{type:'text/plain'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='results_'+new Date().toISOString().slice(0,19).replace(/:/g,'-')+'.txt';
+  a.click();
+}
+</script>
 </body>
 </html>
